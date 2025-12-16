@@ -86,6 +86,13 @@ def load_data():
         data = json.load(f)
 
     for shift in data.get("shifts", []):
+        shift.update(
+            {
+                "status": "OPEN",
+                "fanout_started": False,
+                "assigned_caregiver_id": None,
+            }
+        )
         db.save_shift(shift)
 
     for caregiver in data.get("caregivers", []):
