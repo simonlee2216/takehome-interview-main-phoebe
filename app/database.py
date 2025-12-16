@@ -1,8 +1,12 @@
+import json
+import logging
 from collections.abc import Callable, Iterator, MutableMapping
+from pathlib import Path
 from typing import TypeVar
 
 K = TypeVar("K")
 V = TypeVar("V")
+logger = logging.getLogger(__name__)
 
 
 class InMemoryKeyValueDatabase[K, V]:
@@ -67,3 +71,26 @@ class Registry(InMemoryKeyValueDatabase[str, dict]):
 
 
 db = Registry()
+
+
+def load_data():
+    """Loads sample data into database."""
+    root = Path(__file__).parent.parent
+    file = root / "sample_data.json"
+
+    if not file.exists():
+        logger.warning(f"Could not find {file}")
+        return
+
+    with open(file) as f:
+        data = json.load(f)
+
+    for shift in data.get("shifts", []):
+        db.save_shift(shift)
+
+    for caregiver in data.get("caregivers", []):
+        db.save_caregiver(caregiver)
+
+    logger.info(
+        f"Loaded {len(data.get('shifts', []))} shifts and {len(data.get('caregivers', []))} caregivers."
+    )
